@@ -13,7 +13,10 @@ const PromptCard = ({ post, handleEdit, handleDelete, handleTagClick }) => {
   const [copied, setCopied] = useState("");
 
   const handleProfileClick = () => {
+    console.log(post);
+
     if (post.creator._id === session?.user.id) return router.push("/profile");
+
     router.push(`/profile/${post.creator._id}?name=${post.creator.username}`);
   };
 
@@ -24,7 +27,7 @@ const PromptCard = ({ post, handleEdit, handleDelete, handleTagClick }) => {
   };
 
   return (
-    <div className="prompt_card max-w-lg mx-auto p-6 bg-white shadow-lg rounded-xl md:max-w-2xl lg:max-w-3xl">
+    <div className="prompt_card max-w-md mx-auto p-4 bg-white shadow-md rounded-lg">
       <div className="flex justify-between items-start gap-5">
         <div
           className="flex-1 flex justify-start items-center gap-3 cursor-pointer"
