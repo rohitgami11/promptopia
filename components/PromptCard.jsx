@@ -11,6 +11,7 @@ const PromptCard = ({ post, handleEdit, handleDelete, handleTagClick }) => {
   const router = useRouter();
 
   const [copied, setCopied] = useState("");
+  const [copiedLink, setCopiedLink] = useState("");
 
   const handleProfileClick = () => {
     console.log(post);
@@ -23,7 +24,7 @@ const PromptCard = ({ post, handleEdit, handleDelete, handleTagClick }) => {
   const handleCopy = () => {
     setCopied(post.prompt);
     navigator.clipboard.writeText(post.prompt);
-    setTimeout(() => setCopied(false), 3000);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -67,10 +68,45 @@ const PromptCard = ({ post, handleEdit, handleDelete, handleTagClick }) => {
 
       <p className='my-4 font-satoshi text-sm text-gray-700'>{post.prompt}</p>
       <p
-        className='font-inter text-sm blue_gradient cursor-pointer'
-        onClick={() => handleTagClick && handleTagClick(post.tag)}
+        className="font-inter text-sm"
       >
-        #{post.tag}
+        {post.link && (
+          <div className="flex items-center gap-2 mb-4"> 
+            
+            <img
+              src={
+                copiedLink === post.Link
+                  ? "/assets/icons/tick.svg"
+                  : "/assets/images/iconmonstr-link-thin.svg"
+              }
+              alt="Link"
+              onClick={() => {
+                setCopiedLink(post.Link);
+                navigator.clipboard.writeText(post.link);
+                setTimeout(() => setCopiedLink(false), 2000);
+              }}
+              className="cursor-pointer w-5 h-5" 
+            />
+            
+            <span className="text-sm font-medium text-black">
+              Link to a conversation
+            </span>
+          </div>
+        )}
+      </p>
+      <p
+        className='font-inter text-sm blue_gradient cursor-pointer'
+        // onClick={() => handleTagClick && handleTagClick(post.tag)}
+      >
+        {post.tags && post.tags.map((tag, index) => (
+          <span
+            key={index}
+            onClick={() => handleTagClick && handleTagClick(tag)}
+            className="mr-2"
+          >
+            #{tag}
+          </span>
+        ))}
       </p>
 
       {session?.user.id === post.creator._id && pathName === "/profile" && (

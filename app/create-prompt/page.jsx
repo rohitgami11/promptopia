@@ -11,7 +11,7 @@ const CreatePrompt = () => {
   const { data: session } = useSession();
 
   const [submitting, setIsSubmitting] = useState(false);
-  const [post, setPost] = useState({ prompt: "", tag: "" });
+  const [post, setPost] = useState({ prompt: "", tags: [], link: "" });
 
   const createPrompt = async (e) => {
     e.preventDefault();
@@ -23,7 +23,8 @@ const CreatePrompt = () => {
         body: JSON.stringify({
           prompt: post.prompt,
           userId: session?.user.id,
-          tag: post.tag,
+          tags: post.tags,  // sending tags as an array
+          link: post.link
         }),
       });
 
@@ -39,7 +40,7 @@ const CreatePrompt = () => {
 
   return (
     <Form
-      type='Create'
+      type="Create"
       post={post}
       setPost={setPost}
       submitting={submitting}

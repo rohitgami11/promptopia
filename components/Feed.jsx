@@ -42,7 +42,7 @@ const Feed = () => {
     return allPosts.filter(
       (item) =>
         regex.test(item.creator.username) ||
-        regex.test(item.tag) ||
+        item.tags.some(tag => regex.test(tag)) ||
         regex.test(item.prompt)
     );
   };
