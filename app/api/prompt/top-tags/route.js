@@ -5,9 +5,6 @@ export const GET = async (req) => {
   try {
     await connectToDB();
 
-    const totalPromptCount = await Prompt.countDocuments();
-    console.log("totalPromptCount:", totalPromptCount);
-
     const topTags = await Prompt.aggregate([
       {$unwind: "$tags"},
       {$group: {_id: "$tags", count : {$sum: 1}}},
