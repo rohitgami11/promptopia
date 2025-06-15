@@ -28,6 +28,7 @@ export const GET = async (req) => {
       {
         $unwind: "$creatorDetails"
       },
+      {$sort: {latestPromptDate: -1}},
       {
         $project: {
           _id: 0,
