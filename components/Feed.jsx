@@ -17,43 +17,37 @@ const Feed = () => {
   const [nextCursor, setNextCursor] = useState(null);
   const [prevCursor, setPrevCursor] = useState(null);
   const [searchText, setSearchText] = useState("");
+  const [activeTags, setActiveTags] = useState([]);
   const [searchTimeout, setSearchTimeout] = useState(null);
 
-  const fetchPosts = async ({ cursor = null, prevCursor = null, query = "" } = {}) => {
-    console.log("Fetching posts with: ", { cursor, prevCursor, query });
+  const fetchPosts = async ({
+    cursor = null,
+    prevCursor = null,
+    query = "",
+    tags = [],
+  } = {}) => {
+    const params = new URLSearchParams({ limit: 3 });
 
-    const params = new URLSearchParams({
-      limit: 10,
-    });
-    
     if (cursor) params.append("cursor", cursor);
     if (prevCursor) params.append("prevCursor", prevCursor);
     if (query) params.append("search", query);
-    
-    console.log("Final API URL:", `/api/prompt?${params}`);
-    
+    if (tags.length > 0) params.append("tags", tags.join(","));
+
     const response = await fetch(`/api/prompt?${params}`);
     const result = await response.json();
-    
-    if (result.prompts.length === 0) {
-      console.log("⚠️ No prompts found for this request. State not updated.");
-      toast.error("No more prompts in this direction.");
-      return; // don't update anything if empty
-    }
 
-    console.log("Fetched prompts:", result.prompts);
-    console.log("New nextCursor:", result.nextCursor);
-    console.log("New prevCursor:", result.prevCursor);
+    if (result.prompts.length === 0) {
+      toast.error("No more prompts in this direction.");
+      return;
+    }
 
     setPosts(result.prompts);
     setNextCursor(result.nextCursor);
     setPrevCursor(result.prevCursor);
   };
 
-  // Initial load
   useEffect(() => {
-    console.log("Initial page load");
-    fetchPosts();
+    fetchPosts({ query: searchText, tags: activeTags });
   }, []);
 
   const handleSearchChange = (e) => {
@@ -63,33 +57,40 @@ const Feed = () => {
 
     setSearchTimeout(
       setTimeout(() => {
-        console.log("Triggering search for:", value);
         setNextCursor(null);
         setPrevCursor(null);
-        fetchPosts({ query: value });
+        fetchPosts({ query: value, tags: activeTags });
       }, 500)
     );
   };
 
   const handleTagClick = (tagName) => {
-    console.log("Tag clicked:", tagName);
-    setSearchText(tagName);
+    if (!activeTags.includes(tagName)) {
+      const newTags = [...activeTags, tagName];
+      setActiveTags(newTags);
+      setNextCursor(null);
+      setPrevCursor(null);
+      fetchPosts({ query: searchText, tags: newTags });
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    const newTags = activeTags.filter((tag) => tag !== tagToRemove);
+    setActiveTags(newTags);
     setNextCursor(null);
     setPrevCursor(null);
-    fetchPosts({ query: tagName });
+    fetchPosts({ query: searchText, tags: newTags });
   };
 
   const handleNavigatePrevious = () => {
-    console.log("Clicking Prev — prevCursor:", prevCursor);
     if (prevCursor) {
-      fetchPosts({ prevCursor: prevCursor, query: searchText });
+      fetchPosts({ prevCursor, query: searchText, tags: activeTags });
     }
   };
 
   const handleNavigateNext = () => {
-    console.log("Clicking Next — nextCursor:", nextCursor);
     if (nextCursor) {
-      fetchPosts({ cursor: nextCursor, query: searchText });
+      fetchPosts({ cursor: nextCursor, query: searchText, tags: activeTags });
     }
   };
 
@@ -105,7 +106,28 @@ const Feed = () => {
             className="search_input peer"
           />
         </form>
-        <nav aria-label="Page navigation" className="flex justify-center gap-5 mt-5">
+
+        {activeTags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-4">
+            {activeTags.map((tag) => (
+              <div
+                key={tag}
+                className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full flex items-center"
+              >
+                <span>#{tag}</span>
+                <button
+                  onClick={() => handleRemoveTag(tag)}
+                  className="ml-2 text-red-500 hover:text-red-700 focus:outline-none"
+                  aria-label={`Remove ${tag}`}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <nav className="flex justify-center gap-5 mt-5">
           <button
             onClick={handleNavigatePrevious}
             disabled={!prevCursor}
@@ -113,7 +135,6 @@ const Feed = () => {
           >
             ⬅ Prev
           </button>
-
           <button
             onClick={handleNavigateNext}
             disabled={!nextCursor}
@@ -122,6 +143,7 @@ const Feed = () => {
             Next ➡
           </button>
         </nav>
+
         <PromptCardList data={posts} handleTagClick={handleTagClick} />
       </section>
     </div>

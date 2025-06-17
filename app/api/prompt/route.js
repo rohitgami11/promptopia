@@ -29,9 +29,16 @@ export const GET = async (req) => {
     }
 
     // Add tags filter
-    if (tagQuery) {
-      query.tags = { $in: tagQuery.split(",") };
-    }
+    // Old
+  if (tagQuery) {
+    query.tags = { $in: tagQuery.split(",") };
+  }
+
+  // New
+  if (tagQuery) {
+    query.tags = { $all: tagQuery.split(",") }; // intersection filter
+  }
+
 
     // Apply cursor-based condition
     if (cursor) {
