@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import PromptCard from "./PromptCard";
 import toast from "react-hot-toast";
 
+// Child component
 const PromptCardList = ({ data, handleTagClick }) => (
   <div className="mt-10 prompt_layout w-full">
     {data.map((post) => (
@@ -28,10 +29,24 @@ const Feed = () => {
   } = {}) => {
     const params = new URLSearchParams({ limit: 3 });
 
-    if (cursor) params.append("cursor", cursor);
-    if (prevCursor) params.append("prevCursor", prevCursor);
+    if (cursor?.cursorId) {
+      params.append("cursorId", cursor.cursorId);
+      if (cursor.cursorScore != null) {
+        params.append("cursorScore", cursor.cursorScore);
+      }
+    }
+
+    if (prevCursor?.prevCursorId) {
+      params.append("prevCursorId", prevCursor.prevCursorId);
+      if (prevCursor.prevCursorScore != null) {
+        params.append("prevCursorScore", prevCursor.prevCursorScore);
+      }
+    }
+
     if (query) params.append("search", query);
     if (tags.length > 0) params.append("tags", tags.join(","));
+
+    console.log("⏩ Sending request with params:", params.toString());
 
     const response = await fetch(`/api/prompt?${params}`);
     const result = await response.json();
@@ -83,14 +98,28 @@ const Feed = () => {
   };
 
   const handleNavigatePrevious = () => {
-    if (prevCursor) {
-      fetchPosts({ prevCursor, query: searchText, tags: activeTags });
+    if (prevCursor?.prevCursorId) {
+      fetchPosts({
+        prevCursor: {
+          prevCursorId: prevCursor.prevCursorId,
+          prevCursorScore: prevCursor.prevCursorScore,
+        },
+        query: searchText,
+        tags: activeTags,
+      });
     }
   };
 
   const handleNavigateNext = () => {
-    if (nextCursor) {
-      fetchPosts({ cursor: nextCursor, query: searchText, tags: activeTags });
+    if (nextCursor?.cursorId) {
+      fetchPosts({
+        cursor: {
+          cursorId: nextCursor.cursorId,
+          cursorScore: nextCursor.cursorScore,
+        },
+        query: searchText,
+        tags: activeTags,
+      });
     }
   };
 
@@ -130,14 +159,14 @@ const Feed = () => {
         <nav className="flex justify-center gap-5 mt-5">
           <button
             onClick={handleNavigatePrevious}
-            disabled={!prevCursor}
+            disabled={!prevCursor?.prevCursorId}
             className="px-5 py-2 text-lg bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700 transition"
           >
             ⬅ Prev
           </button>
           <button
             onClick={handleNavigateNext}
-            disabled={!nextCursor}
+            disabled={!nextCursor?.cursorId}
             className="px-5 py-2 text-lg bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700 transition"
           >
             Next ➡
