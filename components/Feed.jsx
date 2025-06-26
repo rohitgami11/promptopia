@@ -27,7 +27,7 @@ const Feed = () => {
     query = "",
     tags = [],
   } = {}) => {
-    const params = new URLSearchParams({ limit: 3 });
+    const params = new URLSearchParams({ limit: 6 });
 
     if (cursor?.cursorId) {
       params.append("cursorId", cursor.cursorId);
